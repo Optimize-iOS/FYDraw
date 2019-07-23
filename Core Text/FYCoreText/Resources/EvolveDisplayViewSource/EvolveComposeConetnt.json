@@ -1,0 +1,25 @@
+[
+    {
+        "color": "0000FF",
+        "content": "Evolve Compose Content 进阶排版内容",
+        "size": "16",
+        "type": "txt"
+    },
+    {
+        "color": "FF1493",
+        "content": "显示内容、颜色和字体",
+        "size": "24",
+        "type": "txt"
+    },
+    {
+        "color": "FF8C00",
+        "content": "模拟显示文件大小。 \n",
+        "type": "txt"
+    },
+    {
+        "color": "000000",
+        "content": "Evolve Compose Content 进阶排版内容",
+        "size": "16",
+        "type": "txt"
+    }
+]

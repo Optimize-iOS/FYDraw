@@ -1,0 +1,42 @@
+//
+//  FYCoreText-PrefixHeader.pch
+//  FYCoreText
+//
+//  Created by JackJin on 2019/6/25.
+//  Copyright © 2019 xuehu. All rights reserved.
+//
+
+#ifndef FYCoreText_PrefixHeader_pch
+#define FYCoreText_PrefixHeader_pch
+
+// Include any system framework and library headers here that should be included in all compilation units.
+// You will also need to set the Prefix Header build setting of one or more of your targets to reference this file.
+
+#endif /* FYCoreText_PrefixHeader_pch */
+
+
+
+#pragma mark -
+
+
+#ifdef __OBJC__
+
+#ifdef DEBUG
+#define debugLog(...) NSLog(__VA_ARGS__)
+#define debugMethod() NSLog(@"%s", __func__)
+
+#else
+#define debugLog(...)
+#define debugMethod()
+#endif
+
+#define RGB(A, B, C) [UIColor colorWithRed:A/255.0 green:B/255.0 blue:C/255.0 alpha:1.0]
+#define RGBP(A, B, C, P) [UIColor colorWithRed:A/255.0 green:B/255.0 blue:C/255.0 alpha:P]
+
+#endif
+
+
+#pragma mark - UI Constant
+
+#define Screen_Width ([[UIScreen mainScreen] bounds].size.width)
+#define Screen_Height ([[UIScreen mainScreen] bounds].size.height)
