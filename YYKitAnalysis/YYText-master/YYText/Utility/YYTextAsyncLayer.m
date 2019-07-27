@@ -114,11 +114,13 @@ static dispatch_queue_t YYTextAsyncLayerGetReleaseQueue() {
 
 //TODO 为什么设置当前 View 需要更新
 //就采用取消异步展示 效果 ？？？
+//Step 6
 - (void)setNeedsDisplay {
     [self _cancelAsyncDisplay];
     [super setNeedsDisplay];
 }
 
+//Step 7
 - (void)display {
     super.contents = super.contents;
     [self _displayAsync:_displaysAsynchronously];
@@ -126,6 +128,7 @@ static dispatch_queue_t YYTextAsyncLayerGetReleaseQueue() {
 
 #pragma mark - Private
 
+//Step 8
 - (void)_displayAsync:(BOOL)async {
     //
     //设置当前 CALayerDelegate

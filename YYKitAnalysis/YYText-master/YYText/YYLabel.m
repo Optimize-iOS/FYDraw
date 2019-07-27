@@ -82,12 +82,14 @@ static dispatch_queue_t YYLabelGetReleaseQueue() {
     _shrinkInnerLayout = [YYLabel _shrinkLayoutWithLayout:_innerLayout];
 }
 
+//Step 3
 - (void)_setLayoutNeedUpdate {
     _state.layoutNeedUpdate = YES;
     [self _clearInnerLayout];
     [self _setLayoutNeedRedraw];
 }
 
+//Step 5
 - (void)_setLayoutNeedRedraw {
     //把当前 Layer 标记为需要刷新
     //need display
@@ -96,6 +98,8 @@ static dispatch_queue_t YYLabelGetReleaseQueue() {
     [self.layer setNeedsDisplay];
 }
 
+//Step 4
+//清除 previous state
 - (void)_clearInnerLayout {
     if (!_innerLayout) return;
     YYTextLayout *layout = _innerLayout;
@@ -889,6 +893,7 @@ static dispatch_queue_t YYLabelGetReleaseQueue() {
     }
 }
 
+//Step 1
 - (void)setAttributedText:(NSAttributedString *)attributedText {
     if (attributedText.length > 0) {
         _innerText = attributedText.mutableCopy;
@@ -914,7 +919,7 @@ static dispatch_queue_t YYLabelGetReleaseQueue() {
     [_textParser parseText:_innerText selectedRange:NULL];
     if (!_ignoreCommonProperties) {
         
-        // 没看懂为什么会清楚 clear contents
+        // clear contents
         if (_displaysAsynchronously && _clearContentsBeforeAsynchronouslyDisplay) {
             [self _clearContents];
         }
@@ -923,6 +928,7 @@ static dispatch_queue_t YYLabelGetReleaseQueue() {
         [self _updateOuterTextProperties];
         
         //设置更新 Layout （1）删除以前的布局 （2）重新调用当前的布局
+        //Step 2
         [self _setLayoutNeedUpdate];
         
         //移除长按 和 高亮的动画
@@ -1137,6 +1143,7 @@ static dispatch_queue_t YYLabelGetReleaseQueue() {
     YYTextAsyncLayerDisplayTask *task = [YYTextAsyncLayerDisplayTask new];
     
     //清除 以前的内容
+    //Step 8.1
     task.willDisplay = ^(CALayer *layer) {
         [layer removeAnimationForKey:@"contents"];
         
@@ -1161,6 +1168,7 @@ static dispatch_queue_t YYLabelGetReleaseQueue() {
     };
 
     //展示 Text Layout
+    //Step 8.2
     task.display = ^(CGContextRef context, CGSize size, BOOL (^isCancelled)(void)) {
         if (isCancelled()) return;
         if (text.length == 0) return;
@@ -1197,9 +1205,11 @@ static dispatch_queue_t YYLabelGetReleaseQueue() {
         //绘制当前显示内容 | 在 Core Text 里面也就是在计算需要绘制 UI 开始绘制的当前界面
         //
         //在具体刷新的过程中 Layout 会记录需要刷新的具体内容
+        //Step 9.8
         [drawLayout drawInContext:context size:size point:point view:nil layer:nil debug:debug cancel:isCancelled];
     };
 
+    //Step 8.3
     task.didDisplay = ^(CALayer *layer, BOOL finished) {
         YYTextLayout *drawLayout = layout;
         if (layoutUpdated && shrinkLayout) {
