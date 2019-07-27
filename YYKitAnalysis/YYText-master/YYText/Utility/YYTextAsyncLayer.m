@@ -160,6 +160,7 @@ static dispatch_queue_t YYTextAsyncLayerGetReleaseQueue() {
         CGColorRef backgroundColor = (opaque && self.backgroundColor) ? CGColorRetain(self.backgroundColor) : NULL;
         
         //判断当前 size 宽高 | 如果不满住条件 | 就要返回当前 Layer Contents 桥接
+        //实际绘制 获取获取当前绘制线程，在当前线程中绘制 | 提供取消机制，取消就展示 | 在设置的 CGContext 获取绘制 Image | 判断取消的基础上在 main thread 绘制
         if (size.width < 1 || size.height < 1) {
             CGImageRef image = (__bridge_retained CGImageRef)(self.contents);
             self.contents = nil;
@@ -245,7 +246,7 @@ static dispatch_queue_t YYTextAsyncLayerGetReleaseQueue() {
         [_sentinel increase];
         if (task.willDisplay) task.willDisplay(self);
         
-        //
+        //通过 CGContext 设置当前绘制条件 | 调用 YYTextLayout 绘制 | CGContext 绘制绘制生成 Image | 展示
         UIGraphicsBeginImageContextWithOptions(self.bounds.size, self.opaque, self.contentsScale);
         CGContextRef context = UIGraphicsGetCurrentContext();
         if (self.opaque && context) {
