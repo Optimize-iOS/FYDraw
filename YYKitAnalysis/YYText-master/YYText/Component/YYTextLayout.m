@@ -378,6 +378,7 @@ dispatch_semaphore_signal(_lock);
     return [self layoutWithContainer:container text:text range:NSMakeRange(0, text.length)];
 }
 
+//Step 9
 + (YYTextLayout *)layoutWithContainer:(YYTextContainer *)container text:(NSAttributedString *)text range:(NSRange)range {
     YYTextLayout *layout = NULL;
     CGPathRef cgPath = nil;
@@ -531,11 +532,13 @@ dispatch_semaphore_signal(_lock);
     
     // create CoreText objects
     //根据 NSAttributesString 来创建 CTFramesetter 类型
+    //Step 9.1
     ctSetter = CTFramesetterCreateWithAttributedString((CFTypeRef)text);
     if (!ctSetter) goto fail;
     //根据在 CTFramesetter 传递的参数来设置生成绘制所需要的 CTFrameRef
     //在函数体积很小的情况下 可以采用内联函数来调用
     //TODO TODO
+    //Step 9.2
     ctFrame = CTFramesetterCreateFrame(ctSetter, YYTextCFRangeFromNSRange(range), cgPath, (CFTypeRef)frameAttrs);
     if (!ctFrame) goto fail;
     lines = [NSMutableArray new];
@@ -562,6 +565,7 @@ dispatch_semaphore_signal(_lock);
     
     // calculate line frame
     // 遍历所有行数
+    //Step 9.3
     NSUInteger lineCurrentIdx = 0;
     for (NSUInteger i = 0; i < lineCount; i++) {
         //
@@ -582,6 +586,8 @@ dispatch_semaphore_signal(_lock);
         //TODO TextLine 是做什么的???
         ///行数最为重要是在 AttributeString --> CTFramesetterRef --> CTFrameRef
         /// --> CTLineRef
+        //当前行的基本参数
+        //Step 9.4
         YYTextLine *line = [YYTextLine lineWithCTLine:ctLine position:position vertical:isVerticalForm];
         CGRect rect = line.bounds;
         
@@ -635,6 +641,7 @@ dispatch_semaphore_signal(_lock);
     }
     
     ///行数 大于 0
+    //Step 9.4
     if (rowCount > 0) {
         if (maximumNumberOfRows > 0) {
             if (rowCount > maximumNumberOfRows) {
@@ -706,6 +713,7 @@ dispatch_semaphore_signal(_lock);
         }
     }
     
+    //Step 9.5
     { // calculate bounding size
         CGRect rect = textBoundingRect;
         if (container.path) {
@@ -731,6 +739,7 @@ dispatch_semaphore_signal(_lock);
         textBoundingSize = size;
     }
     
+    //Step 9.6
     visibleRange = YYTextNSRangeFromCFRange(CTFrameGetVisibleStringRange(ctFrame));
     if (needTruncation) {
         YYTextLine *lastLine = lines.lastObject;
@@ -809,6 +818,7 @@ dispatch_semaphore_signal(_lock);
         }
     }
     
+    //Step 9.6
     if (isVerticalForm) {
         NSCharacterSet *rotateCharset = YYTextVerticalFormRotateCharacterSet();
         NSCharacterSet *rotateMoveCharset = YYTextVerticalFormRotateAndMoveCharacterSet();
@@ -876,6 +886,7 @@ dispatch_semaphore_signal(_lock);
         if (truncatedLine) lineBlock(truncatedLine);
     }
     
+    //Step 9.7
     if (visibleRange.length > 0) {
         layout.needDrawText = YES;
         
@@ -3452,8 +3463,6 @@ static void YYTextDrawDebug(YYTextLayout *layout, CGContextRef context, CGSize s
     }
     CGContextRestoreGState(context);
     UIGraphicsPopContext();
-    
-    CTFontRef
 }
 
 //TODO 绘制方法调用
