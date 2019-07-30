@@ -2415,7 +2415,7 @@ static void YYTextDrawRun(YYTextLine *line, CTRunRef run, CGContextRef context, 
                 if (glyphTransformValue) {
                     CFIndex runStrIdx[glyphCount + 1];
                     CTRunGetStringIndices(run, CFRangeMake(0, 0), runStrIdx);
-                    //
+                    //获取当前 run 的 范围
                     CFRange runStrRange = CTRunGetStringRange(run);
                     runStrIdx[glyphCount] = runStrRange.location + runStrRange.length;
                     //
@@ -2424,6 +2424,7 @@ static void YYTextDrawRun(YYTextLine *line, CTRunRef run, CGContextRef context, 
                     CGAffineTransform glyphTransform = glyphTransformValue.CGAffineTransformValue;
                     CGPoint zeroPoint = CGPointZero;
                     
+                    ///遍历每一个 run （块） 中的 GlyPhs (也就是单个字体)，执行 CTFontDrawGlyphs 绘制
                     for (NSUInteger g = 0; g < glyphCount; g++) {
                         CGContextSaveGState(context); {
                             CGContextSetTextMatrix(context, CGAffineTransformIdentity);
@@ -2501,6 +2502,7 @@ static void YYTextDrawBorderRects(CGContextRef context, CGSize size, YYTextBorde
         CGContextBeginTransparencyLayer(context, NULL);
     }
     
+    //Shadow 显示的路径
     NSMutableArray *paths = [NSMutableArray new];
     for (NSValue *value in rects) {
         CGRect rect = value.CGRectValue;
@@ -2842,12 +2844,14 @@ static void YYTextDrawBorder(YYTextLayout *layout, CGContextRef context, CGSize 
     BOOL needJumpRun = NO;
     NSUInteger jumpRunIndex = 0;
     
+    //遍历 line，每行中 run
     for (NSInteger l = 0, lMax = lines.count; l < lMax; l++) {
         if (cancel && cancel()) break;
         
         YYTextLine *line = lines[l];
         if (layout.truncatedLine && layout.truncatedLine.index == line.index) line = layout.truncatedLine;
         CFArrayRef runs = CTLineGetGlyphRuns(line.CTLine);
+        //遍历每 run
         for (NSInteger r = 0, rMax = CFArrayGetCount(runs); r < rMax; r++) {
             if (needJumpRun) {
                 needJumpRun = NO;
@@ -2855,10 +2859,12 @@ static void YYTextDrawBorder(YYTextLayout *layout, CGContextRef context, CGSize 
                 if (r >= rMax) break;
             }
             
+            //获取 index 个 run，并且或者当前 run 中的 glyph
             CTRunRef run = CFArrayGetValueAtIndex(runs, r);
             CFIndex glyphCount = CTRunGetGlyphCount(run);
             if (glyphCount == 0) continue;
             
+            //取出每个 run 中 textborder
             NSDictionary *attrs = (id)CTRunGetAttributes(run);
             YYTextBorder *border = attrs[borderKey];
             if (!border) continue;
@@ -2868,9 +2874,10 @@ static void YYTextDrawBorder(YYTextLayout *layout, CGContextRef context, CGSize 
             if (runRange.location + runRange.length > layout.text.length) continue;
             
             NSMutableArray *runRects = [NSMutableArray new];
-            NSInteger endLineIndex = l;
-            NSInteger endRunIndex = r;
+            NSInteger endLineIndex = l; //当前行数
+            NSInteger endRunIndex = r;  //当前 run 计数
             BOOL endFound = NO;
+            //遍历当前行数及以后行数拥有相同 border
             for (NSInteger ll = l; ll < lMax; ll++) {
                 if (endFound) break;
                 YYTextLine *iLine = lines[ll];
@@ -2888,6 +2895,7 @@ static void YYTextDrawBorder(YYTextLayout *layout, CGContextRef context, CGSize 
                     endLineIndex = ll;
                     endRunIndex = rr;
                     
+                    //获取当前 Run 的 StartPoint
                     CGPoint iRunPosition = CGPointZero;
                     CTRunGetPositions(iRun, CFRangeMake(0, 1), &iRunPosition);
                     CGFloat ascent, descent;
@@ -2918,12 +2926,14 @@ static void YYTextDrawBorder(YYTextLayout *layout, CGContextRef context, CGSize 
                 }
             }
             
+            //根据上面👆获取具有相同的 runRect 来计算绘制区域
             NSMutableArray *drawRects = [NSMutableArray new];
             CGRect curRect= ((NSValue *)[runRects firstObject]).CGRectValue;
             for (NSInteger re = 0, reMax = runRects.count; re < reMax; re++) {
                 CGRect rect = ((NSValue *)runRects[re]).CGRectValue;
                 if (isVertical) {
                     if (fabs(rect.origin.x - curRect.origin.x) < 1) {
+                        //当两个人 run 是一样的，具体极近就合并为为一个来处理
                         curRect = YYTextMergeRectInSameLine(rect, curRect, isVertical);
                     } else {
                         [drawRects addObject:[NSValue valueWithCGRect:curRect]];
@@ -2942,6 +2952,7 @@ static void YYTextDrawBorder(YYTextLayout *layout, CGContextRef context, CGSize 
                 [drawRects addObject:[NSValue valueWithCGRect:curRect]];
             }
             
+            //绘制每个 run 当前的 border
             YYTextDrawBorderRects(context, size, border, drawRects, isVertical);
             
             if (l == endLineIndex) {
@@ -3189,9 +3200,11 @@ static void YYTextDrawShadow(YYTextLayout *layout, CGContextRef context, CGSize 
                     CGSize offset = shadow.offset;
                     offset.width -= offsetAlterX;
                     CGContextSaveGState(context); {
+                        //设置当前 Shadow 的偏移值、切角和阴影 Color
                         CGContextSetShadowWithColor(context, offset, shadow.radius, shadow.color.CGColor);
                         CGContextSetBlendMode(context, shadow.blendMode);
                         CGContextTranslateCTM(context, offsetAlterX, 0);
+                        //绘制在 line 中 run 的字体
                         YYTextDrawRun(line, run, context, size, isVertical, lineRunRanges[r], verticalOffset);
                     } CGContextRestoreGState(context);
                     shadow = shadow.subShadow;

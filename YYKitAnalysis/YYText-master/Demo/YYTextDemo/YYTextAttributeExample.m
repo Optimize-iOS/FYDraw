@@ -251,7 +251,16 @@
      */
     label.highlightTapAction = ^(UIView *containerView, NSAttributedString *text, NSRange range, CGRect rect) {
         [_self showMessage:[NSString stringWithFormat:@"Tap: %@",[text.string substringWithRange:range]]];
+        
+        _name = @"JackBai";
+        NSLog(@"change name: %@, address: %p", _name, _name);
+        
+        _name = [_name mutableCopy];
+        NSLog(@"copy change name: %@, address: %p", _name, _name);
     };
+    
+    _name = @"JackJin";
+    NSLog(@"name: %@, address: %p", _name, _name);
 }
 
 - (NSAttributedString *)padding {
